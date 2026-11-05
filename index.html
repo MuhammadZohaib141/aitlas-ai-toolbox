@@ -63,43 +63,41 @@
   <div class="settings-layer" id="settingsLayer" hidden>
     <div class="settings-backdrop" id="settingsBackdrop"></div>
     <section class="settings-drawer" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
-      <header class="settings-header"><div class="settings-heading-mark">✳</div><div><span class="settings-kicker">YOUR OWNER WORKSPACE</span><h2 id="settingsTitle">AI Settings<span class="heading-dot">.</span></h2><p>Connect real AI models without editing any code.</p></div><button type="button" class="icon-btn" id="closeSettings" aria-label="Close settings"><span data-icon="x"></span></button></header>
+      <header class="settings-header"><div class="settings-heading-mark">✳</div><div><span class="settings-kicker">AI CONTROL CENTER</span><h2 id="settingsTitle">AI Settings<span class="heading-dot">.</span></h2><p>Choose free browser AI, your Vercel server AI, or your own personal provider key.</p></div><button type="button" class="icon-btn" id="closeSettings" aria-label="Close settings"><span data-icon="x"></span></button></header>
       <div class="settings-content">
-        <div class="settings-alert" id="settingsAlert" role="status" aria-live="polite">Checking AI options…</div>
-        <div id="browserAiSettings" class="browser-ai-panel" hidden>
-          <div class="settings-step">FREE · NO API KEY OR SERVER</div>
+        <div class="settings-alert" id="settingsAlert" role="status" aria-live="polite">Checking available AI options…</div>
+        <div id="browserAiSettings" class="browser-ai-panel">
+          <div class="settings-step">FREE · AUTOMATIC FALLBACK</div>
           <h3>Browser AI</h3>
-          <p>A free, small language model runs on your device when you generate text. The first run downloads model files (hundreds of MB); internet, supported WebGPU graphics, and sufficient memory are required. Your text stays on your computer during inference.</p>
+          <p>A small AI model runs on the user’s device. No API key is required. The first run downloads model files and needs Chrome/Edge, WebGPU, internet, and enough GPU memory.</p>
           <div class="settings-alert" id="browserAiStatus" role="status">Checking browser support…</div>
-          <label class="settings-label">Model<select id="browserModel"><option value="Qwen2.5-0.5B-Instruct-q4f16_1-MLC">Small · Qwen 0.5B (~1 GB GPU memory)</option><option value="Qwen2.5-1.5B-Instruct-q4f16_1-MLC">Higher quality · Qwen 1.5B (~1.7 GB GPU memory)</option></select></label>
+          <label class="settings-label">Browser model<select id="browserModel"><option value="Qwen2.5-0.5B-Instruct-q4f16_1-MLC">Small · Qwen 0.5B (~1 GB GPU memory)</option><option value="Qwen2.5-1.5B-Instruct-q4f16_1-MLC">Higher quality · Qwen 1.5B (~1.7 GB GPU memory)</option></select></label>
           <button id="browserAiPrepare" type="button" class="primary-btn settings-submit">Download &amp; load free model <span data-icon="sparkles"></span></button>
-          <p class="settings-footnote">The Image Converter works locally, without an API key or an internet connection.</p>
         </div>
-        <form id="settingsSetup" class="settings-form" hidden><div class="settings-step">01 / SECURE OWNER ACCESS</div><h3>Set up your owner account</h3><p>Find the one-time setup code printed in the terminal running <code>npm start</code>. On hosting, find it in the server logs.</p><label class="settings-label">One-time setup code<input type="text" name="code" placeholder="Code from server terminal" required autocomplete="off" spellcheck="false" /></label><label class="settings-label">Create owner password<input type="password" name="password" minlength="12" placeholder="At least 12 characters" required autocomplete="new-password" /></label><button type="submit" class="primary-btn settings-submit">Create owner account <span data-icon="arrow"></span></button></form>
-        <form id="settingsLogin" class="settings-form" hidden><div class="settings-step">OWNER ACCESS</div><h3>Welcome back</h3><p>Only the site owner can view or change provider settings. Visitors never see your saved API keys.</p><label class="settings-label">Owner password<input type="password" name="password" placeholder="Enter your owner password" required autocomplete="current-password" /></label><button type="submit" class="primary-btn settings-submit">Unlock AI Settings <span data-icon="arrow"></span></button></form>
-        <form id="settingsConfig" class="settings-form" hidden><div class="settings-config-top"><div><div class="settings-step">02 / CONNECT YOUR AI</div><h3>Connect your AI services</h3><p>Choose a free AI provider below. Keys stay on your server; leave an existing key blank to keep it unchanged.</p></div><button type="button" class="settings-logout" id="settingsLogout">Sign out</button></div>
+        <form id="settingsConfig" class="settings-form">
           <div class="provider-tile free-ai-tile">
-            <div class="settings-step">FREE AI · CHOOSE YOUR TEXT ENGINE</div>
-            <p class="free-ai-intro">Try free-tier models for all 15 writing, coding and study utilities. Free providers have limits; an API key is still needed for hosted models.</p>
-            <label class="settings-label">Active text AI provider<select name="provider" id="aiProvider">
-              <option value="auto">Automatic · Prefer connected free providers</option>
-              <option value="gemini">Google Gemini · free API tier</option>
-              <option value="groq">Groq · free API tier</option>
-              <option value="openrouter">OpenRouter · free models</option>
-              <option value="ollama">Ollama · run locally, no cloud key</option>
-              <option value="openai">OpenAI · optional paid API</option>
+            <div class="settings-step">HOW TEXT TOOLS SHOULD RUN</div>
+            <label class="settings-label">AI mode<select name="mode" id="aiMode">
+              <option value="auto">Automatic · server AI first, then free Browser AI</option>
+              <option value="browser">Free Browser AI only · no API key</option>
+              <option value="server">Vercel server AI only · uses environment variables</option>
+              <option value="personal">Personal API key · stored only in this browser</option>
             </select></label>
-            <div class="free-providers">
-              <div class="free-provider"><div class="provider-top"><div class="provider-logo">G</div><div><strong>Google Gemini</strong><small>Free tier · limits vary by project</small></div><span class="provider-status" id="geminiStatus">Not connected</span></div><label class="settings-label">Gemini API key<input type="password" name="gemini" placeholder="Paste Google AI Studio API key" autocomplete="new-password" spellcheck="false" /></label><a class="settings-external" target="_blank" rel="noopener noreferrer" href="https://aistudio.google.com/apikey">Get Gemini key ↗</a><label class="remove-provider"><input type="checkbox" name="clear_gemini" /> Remove saved key</label></div>
-              <div class="free-provider"><div class="provider-top"><div class="provider-logo">↯</div><div><strong>Groq</strong><small>Free tier · fast text inference</small></div><span class="provider-status" id="groqStatus">Not connected</span></div><label class="settings-label">Groq API key<input type="password" name="groq" placeholder="Paste GroqCloud API key" autocomplete="new-password" spellcheck="false" /></label><a class="settings-external" target="_blank" rel="noopener noreferrer" href="https://console.groq.com/keys">Get Groq key ↗</a><label class="remove-provider"><input type="checkbox" name="clear_groq" /> Remove saved key</label></div>
-              <div class="free-provider"><div class="provider-top"><div class="provider-logo">∞</div><div><strong>OpenRouter</strong><small>Free models router · daily limits</small></div><span class="provider-status" id="openrouterStatus">Not connected</span></div><label class="settings-label">OpenRouter API key<input type="password" name="openrouter" placeholder="Paste OpenRouter API key" autocomplete="new-password" spellcheck="false" /></label><a class="settings-external" target="_blank" rel="noopener noreferrer" href="https://openrouter.ai/settings/keys">Get OpenRouter key ↗</a><label class="remove-provider"><input type="checkbox" name="clear_openrouter" /> Remove saved key</label></div>
-              <div class="free-provider"><div class="provider-top"><div class="provider-logo">⌂</div><div><strong>Ollama</strong><small>Locally installed AI model · no API fees</small></div><span class="provider-status" id="ollamaStatus">Not connected</span></div><label class="remove-provider"><input type="checkbox" name="ollamaEnabled" /> Enable local Ollama (server must be running on the same computer as Ollama)</label><label class="settings-label">Installed Ollama model<input name="ollamaModel" id="ollamaModel" type="text" value="llama3.2" autocomplete="off" spellcheck="false" placeholder="llama3.2" /></label><a class="settings-external" target="_blank" rel="noopener noreferrer" href="https://ollama.com/download">Download Ollama ↗</a></div>
-            </div>
-            <label class="settings-label">Optional free-provider model override<input name="freeModel" id="freeModel" type="text" autocomplete="off" spellcheck="false" placeholder="Leave blank for recommended provider default" /></label>
-            <p class="settings-footnote">Leave the model override blank to use a default. For OpenRouter, only openrouter/free and :free models are accepted. Auto mode prefers connected free providers; if only OpenAI is connected, it uses paid OpenAI.</p>
+            <div class="settings-alert" id="serverAiStatus" role="status">Checking Vercel server AI…</div>
+            <p class="settings-footnote">For a public site, configure a server provider in Vercel → Project Settings → Environment Variables. Supported variables: GEMINI_API_KEY, GROQ_API_KEY, OPENROUTER_API_KEY, or OPENAI_API_KEY.</p>
           </div>
-          <div class="provider-tile"><div class="provider-top"><div class="provider-logo openai-mark">✳</div><div><strong>OpenAI</strong><small>Writing · Developer · Student — 15 text tools</small></div><span class="provider-status" id="openaiStatus">Not connected</span></div><label class="settings-label">OpenAI API key<input type="password" name="openai" id="openaiKeyInput" placeholder="sk-…  Paste your OpenAI API key" autocomplete="new-password" spellcheck="false" /></label><label class="settings-label">Model<select name="model" id="aiModel"><option value="gpt-4.1-mini">GPT-4.1 mini · Fast / economical</option><option value="gpt-4.1">GPT-4.1 · More capable</option><option value="gpt-5-mini">GPT-5 mini</option><option value="gpt-5">GPT-5</option></select></label><a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" class="settings-external">Get an OpenAI API key ↗</a><label class="remove-provider"><input type="checkbox" name="clear_openai" /> Remove saved OpenAI key</label></div>
-          <button type="submit" class="primary-btn settings-submit">Save AI settings <span data-icon="check"></span></button><p class="settings-footnote">Only you can change settings. API requests may cost money, even when visitors use the tools without signing up. Use HTTPS on a public website.</p>
+          <div class="provider-tile" id="personalProviderTile">
+            <div class="settings-step">OPTIONAL · PERSONAL PROVIDER KEY</div>
+            <p class="free-ai-intro">This is useful when you want to test a hosted AI directly from the website. The key is sent only to your own Vercel function over HTTPS and is never written to the website files.</p>
+            <label class="settings-label">Provider<select name="provider" id="aiProvider"><option value="gemini">Google Gemini</option><option value="groq">Groq</option><option value="openrouter">OpenRouter free models</option><option value="openai">OpenAI</option></select></label>
+            <label class="settings-label">API key<input type="password" name="key" id="personalAiKey" placeholder="Paste your API key" autocomplete="off" spellcheck="false" /></label>
+            <label class="settings-label">Optional model override<input type="text" name="model" id="personalAiModel" placeholder="Leave blank for recommended default" autocomplete="off" spellcheck="false" /></label>
+            <label class="remove-provider"><input type="checkbox" id="rememberAiKey" /> Remember this key on this browser</label>
+            <p class="settings-footnote">For better security on a public website, use Vercel environment variables instead of saving an owner key in browser storage.</p>
+          </div>
+          <button type="submit" class="primary-btn settings-submit">Save AI settings <span data-icon="check"></span></button>
+          <button type="button" class="settings-logout" id="clearPersonalAi">Clear saved personal key</button>
+          <p class="settings-footnote">Image Converter always works locally in the browser. If automatic mode cannot reach server AI, it uses free Browser AI when the device supports it.</p>
         </form>
       </div>
     </section>

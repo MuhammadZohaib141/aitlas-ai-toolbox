@@ -1,27 +1,42 @@
 'use strict';
-/** Owner controls: passwords and API keys are never saved to browser storage. */
 (() => {
  const $=id=>document.getElementById(id);
- const ui={layer:$('settingsLayer'),alert:$('settingsAlert'),setup:$('settingsSetup'),login:$('settingsLogin'),config:$('settingsConfig')};
- let inFlight=false;
- const inputs=()=>[...ui.layer.querySelectorAll('input[type=password],input[name=code]')];
- function forgetInputs(){inputs().forEach(input=>{input.value=''});}
- function message(text,kind='info'){ui.alert.textContent=text;ui.alert.dataset.kind=kind;}
- function showForm(form){for(const f of [ui.setup,ui.login,ui.config])f.hidden=f!==form;}
- function mark(id,connected){const el=$(id);el.textContent=connected?'Connected ✓':'Not connected';el.classList.toggle('connected',Boolean(connected));}
- function render(data){if(data.setupRequired){showForm(ui.setup);message('First-time owner setup · Your key will not appear in website source code.');return;}if(!data.authenticated){showForm(ui.login);message('Owner sign-in required before changing API keys.');return;}showForm(ui.config);mark('openaiStatus',data.openai);mark('geminiStatus',data.gemini);mark('groqStatus',data.groq);mark('openrouterStatus',data.openrouter);mark('ollamaStatus',data.ollama);$('aiProvider').value=data.provider||'auto';$('freeModel').value=data.freeModel||'';$('ollamaModel').value=data.ollamaModel||'llama3.2';$('ollamaEnabled').checked=Boolean(data.ollama);$('aiModel').value=data.model||'gpt-4.1-mini';message(data.ai?`Text tools are ready via ${data.activeProvider}. You can switch providers below.`:'Choose a free-tier AI provider, add its key, and save your settings.',data.ai?'ok':'info');}
- async function request(path,body){const result=await fetch('/api/admin/'+path,{method:body===undefined?'GET':'POST',headers:body===undefined?{}:{'Content-Type':'application/json'},credentials:'same-origin',body:body===undefined?undefined:JSON.stringify(body),signal:AbortSignal.timeout(12000)});let data;try{data=await result.json()}catch{throw Error('Cannot reach the AI settings server. Start the website using npm start.');}if(!result.ok)throw Error(data.error||'Could not update AI settings.');return data;}
- async function load(){if(location.protocol==='file:'){showForm(null);$('browserAiSettings').hidden=false;const compatible=BrowserAI.support();$('browserAiStatus').textContent=compatible?'WebGPU detected · model loads when you generate.':'WebGPU is unavailable. Chrome/Edge with compatible GPU is required for key-free text generation.';$('browserModel').value=BrowserAI.currentModel();message('Standalone file mode · no API key, no server; local image conversion works offline.');return;}message('Checking owner settings…');try{render(await request('status'));}catch(e){message(e.message,'error');showForm(null);}}
- async function run(action){if(inFlight)return;inFlight=true;const button=ui.layer.querySelector('form:not([hidden]) [type=submit]');if(button)button.disabled=true;try{const data=await action();forgetInputs();render(data);if(data.ok)message(data.authenticated?'Saved! Your selected AI provider is active now.':'Signed out of owner settings.','ok');if(typeof refreshProviderStatus==='function')await refreshProviderStatus();}catch(e){message(e.name==='TimeoutError'?'Settings request timed out. Please retry.':e.message,'error');}finally{inFlight=false;if(button)button.disabled=false;}}
- function close(){ui.layer.hidden=true;document.body.classList.remove('settings-open');forgetInputs();}
+ const STORE='aitlas-ai-runtime-v8';
+ const SESSION='aitlas-ai-session-key-v8';
+ const defaults={mode:'auto',provider:'gemini',model:'',remember:false,key:''};
+ function read(){
+   let saved={};try{saved=JSON.parse(localStorage.getItem(STORE)||'{}')||{}}catch{}
+   let sessionKey='';try{sessionKey=sessionStorage.getItem(SESSION)||''}catch{}
+   return {...defaults,...saved,key:saved.remember?(saved.key||''):sessionKey};
+ }
+ function write(cfg){
+   const safe={mode:cfg.mode,provider:cfg.provider,model:cfg.model||'',remember:Boolean(cfg.remember)};
+   try{
+     if(cfg.remember){safe.key=cfg.key||'';localStorage.setItem(STORE,JSON.stringify(safe));sessionStorage.removeItem(SESSION);}
+     else{localStorage.setItem(STORE,JSON.stringify(safe));if(cfg.key)sessionStorage.setItem(SESSION,cfg.key);else sessionStorage.removeItem(SESSION);}
+   }catch{}
+ }
+ let current=read();let server={ai:false,provider:null};
+ function message(text,kind='info'){const el=$('settingsAlert');el.textContent=text;el.dataset.kind=kind;}
+ function updatePersonalVisibility(){const personal=$('personalProviderTile');if(personal)personal.hidden=$('aiMode').value!=='personal';}
+ async function checkServer(){
+   if(location.protocol==='file:'){server={ai:false,provider:null};$('serverAiStatus').textContent='Direct file mode · server AI is unavailable; Browser AI is used.';return server;}
+   try{const r=await fetch('/api/health',{signal:AbortSignal.timeout(5000)});const j=await r.json();server=j;$('serverAiStatus').textContent=j.ai?`Vercel server AI ready · ${j.provider}`:'Vercel server AI is not configured · automatic mode will use Browser AI';return j;}
+   catch{server={ai:false,provider:null};$('serverAiStatus').textContent='Could not reach the Vercel AI function · automatic mode will try Browser AI';return server;}
+ }
+ async function load(){
+   current=read();$('aiMode').value=current.mode;$('aiProvider').value=current.provider;$('personalAiModel').value=current.model||'';$('rememberAiKey').checked=Boolean(current.remember);$('personalAiKey').value=current.key||'';$('browserModel').value=BrowserAI.currentModel();
+   const supported=BrowserAI.support();$('browserAiStatus').textContent=supported?'WebGPU detected · free Browser AI is available.':'WebGPU is unavailable · hosted AI will be needed for text tools.';updatePersonalVisibility();await checkServer();
+   const autoReady=server.ai||supported;message(autoReady?'AI is ready. Automatic mode will choose the best available option.':'No AI engine is ready on this device yet. Add a personal key or configure a Vercel provider. ',autoReady?'ok':'info');
+ }
+ function getRuntime(){current=read();return {...current,serverReady:Boolean(server.ai),serverProvider:server.provider,browserReady:BrowserAI.support()};}
+ globalThis.AitlasSettings={getRuntime,refresh:checkServer};
+ $('aiMode').addEventListener('change',updatePersonalVisibility);
  $('browserModel').addEventListener('change',e=>{BrowserAI.setModel(e.target.value);$('browserAiStatus').textContent='Model changed. It will download when you generate or press Load.';});
- $('browserAiPrepare').addEventListener('click',async()=>{const btn=$('browserAiPrepare');btn.disabled=true;BrowserAI.onProgress(txt=>{$('browserAiStatus').textContent=txt});try{await BrowserAI.ensure();$('browserAiStatus').textContent='Your free AI model is ready!'}catch(e){$('browserAiStatus').textContent=e.message}finally{btn.disabled=false}});
- const openSettings=()=>{ui.layer.hidden=false;document.body.classList.add('settings-open');load();};
- $('settingsBtn').addEventListener('click',openSettings);$('workbenchSettingsBtn').addEventListener('click',openSettings);
- $('settingsBackdrop').addEventListener('click',close);$('closeSettings').addEventListener('click',close);
- document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!ui.layer.hidden){e.stopImmediatePropagation();close();}},true);
- ui.setup.addEventListener('submit',e=>{e.preventDefault();run(()=>request('setup',{code:ui.setup.elements.code.value.trim(),password:ui.setup.elements.password.value}));});
- ui.login.addEventListener('submit',e=>{e.preventDefault();run(()=>request('login',{password:ui.login.elements.password.value}));});
- ui.config.addEventListener('submit',e=>{e.preventDefault();const f=ui.config.elements;run(()=>request('config',{provider:f.provider.value,openai:f.openai.value,gemini:f.gemini.value,groq:f.groq.value,openrouter:f.openrouter.value,freeModel:f.freeModel.value,ollamaEnabled:f.ollamaEnabled.checked,ollamaModel:f.ollamaModel.value,model:f.model.value,clear_openai:f.clear_openai.checked,clear_gemini:f.clear_gemini.checked,clear_groq:f.clear_groq.checked,clear_openrouter:f.clear_openrouter.checked}));});
- $('settingsLogout').addEventListener('click',()=>run(async()=>{await request('logout',{});return await request('status');}));
+ $('browserAiPrepare').addEventListener('click',async()=>{const btn=$('browserAiPrepare');btn.disabled=true;BrowserAI.onProgress(t=>$('browserAiStatus').textContent=t);try{await BrowserAI.ensure();$('browserAiStatus').textContent='Free Browser AI model is ready!';message('Browser AI is loaded and ready.','ok');}catch(e){$('browserAiStatus').textContent=e.message;message(e.message,'error');}finally{btn.disabled=false}});
+ $('settingsConfig').addEventListener('submit',async e=>{e.preventDefault();current={mode:$('aiMode').value,provider:$('aiProvider').value,model:$('personalAiModel').value.trim(),key:$('personalAiKey').value.trim(),remember:$('rememberAiKey').checked};if(current.mode==='personal'&&!current.key){message('Paste an API key for Personal API key mode.','error');return;}write(current);message('AI settings saved. Your next tool request will use these settings.','ok');if(typeof refreshProviderStatus==='function')await refreshProviderStatus();});
+ $('clearPersonalAi').addEventListener('click',()=>{current={...read(),key:'',remember:false};try{sessionStorage.removeItem(SESSION);const saved=JSON.parse(localStorage.getItem(STORE)||'{}');delete saved.key;saved.remember=false;localStorage.setItem(STORE,JSON.stringify(saved));}catch{}$('personalAiKey').value='';$('rememberAiKey').checked=false;message('Saved personal API key cleared from this browser.','ok');});
+ function close(){$('settingsLayer').hidden=true;document.body.classList.remove('settings-open');}
+ const open=()=>{$('settingsLayer').hidden=false;document.body.classList.add('settings-open');load();};
+ $('settingsBtn').addEventListener('click',open);$('workbenchSettingsBtn').addEventListener('click',open);$('settingsBackdrop').addEventListener('click',close);$('closeSettings').addEventListener('click',close);document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('settingsLayer').hidden){e.stopImmediatePropagation();close();}},true);
 })();

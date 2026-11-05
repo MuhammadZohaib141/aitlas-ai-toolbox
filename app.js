@@ -44,11 +44,30 @@ function clearOutput(){state.output='';if(state.resultUrl){URL.revokeObjectURL(s
 function setOutput(text,options={}){state.output=String(text);state.downloadBlob=null;state.downloadName='';$('copyBtn').disabled=false;$('downloadBtn').disabled=false;$('outputContent').innerHTML=options.info?`<div class="result-summary">${escapeHtml(options.info)}</div>`:'';const p=document.createElement('pre');p.className=`result-text ${options.code?'code':''}`;p.textContent=state.output;$('outputContent').append(p);$('outputFootnote').textContent=options.footnote||'Review the result before using or sharing it.'}
 function outputError(message){$('outputContent').innerHTML=`<div class="result-error">${escapeHtml(message)}</div>`;$('outputFootnote').textContent='Adjust your input and try again.'}
 function clearImage(){if(state.objectUrl){URL.revokeObjectURL(state.objectUrl);state.objectUrl=null}state.image=null;$('imageInput').value='';$('uploadPreview').classList.remove('show');$('uploadPreviewImg').removeAttribute('src');$('fileMeta').textContent='';$('uploadPreviewLabel').textContent=''}
-function providerReady(t){return t.id==='converter'||(FILE_MODE&&!t.image&&BrowserAI.support())||Boolean(state.providers.ai)}
-function engineName(t){return t.id==='converter'?'ON-DEVICE':FILE_MODE&&!t.image?(BrowserAI.support()?'FREE BROWSER AI':'GPU REQUIRED'):providerReady(t)?'REAL AI READY':'SETUP NEEDED'}
+function runtimeSettings(){return globalThis.AitlasSettings?.getRuntime?.()||{mode:FILE_MODE?'browser':'auto',provider:'gemini',key:'',model:'',serverReady:Boolean(state.providers.ai),browserReady:BrowserAI.support()}}
+function providerReady(t){
+ if(t.id==='converter')return true;
+ const r=runtimeSettings();
+ if(FILE_MODE||r.mode==='browser')return BrowserAI.support();
+ if(r.mode==='personal')return Boolean(r.key);
+ if(r.mode==='server')return Boolean(state.providers.ai||r.serverReady);
+ return Boolean(state.providers.ai||r.serverReady||BrowserAI.support());
+}
+function engineName(t){
+ if(t.id==='converter')return 'ON-DEVICE';
+ const r=runtimeSettings();
+ if(FILE_MODE||r.mode==='browser')return BrowserAI.support()?'FREE BROWSER AI':'GPU REQUIRED';
+ if(r.mode==='personal')return r.key?'PERSONAL AI READY':'ADD API KEY';
+ if(r.mode==='server')return state.providers.ai?'SERVER AI READY':'SERVER SETUP NEEDED';
+ return providerReady(t)?'AUTO AI READY':'SETUP NEEDED';
+}
 function engineDescription(t){
  if(t.id==='converter')return 'PNG / JPG / WebP conversion happens entirely in your browser. No AI or API key is required.';
- return FILE_MODE?'Uses a free, real language model running in your browser. First run downloads model files; compatible WebGPU graphics and internet are required. No API key needed.':'Uses a real AI model via the secure server. Choose a provider in AI Settings. No local template is substituted.';
+ const r=runtimeSettings();
+ if(FILE_MODE||r.mode==='browser')return 'Uses a free language model running in your browser. First run downloads model files; WebGPU graphics and internet are required.';
+ if(r.mode==='personal')return 'Uses the personal provider key saved in this browser and sends requests through your Vercel AI function over HTTPS.';
+ if(r.mode==='server')return 'Uses the AI provider configured securely in Vercel environment variables.';
+ return 'Automatic mode prefers Vercel server AI and falls back to free Browser AI when the device supports it.';
 }
 function openTool(id){const t=toolList.find(x=>x.id===id);if(!t)return;state.tool=t;state.running=false;state.recent=[id,...state.recent.filter(x=>x!==id)].slice(0,4);saveStore('aitlas-recent',state.recent);renderRecent();$('wbCategory').textContent=THEMES[t.category].name;$('wbIcon').style.cssText=`--wb-icon-bg:${THEMES[t.category].iconBg};--wb-icon-color:${THEMES[t.category].color}`;$('wbIcon').innerHTML=icon(t.icon);$('workbenchTitle').textContent=t.name;$('wbDescription').textContent=t.desc;$('formFields').innerHTML=t.fields.map(makeField).join('');$('toolForm').reset();$('imageUploadArea').hidden=!t.image;$('imageUploadArea').innerHTML=t.image?`<div class="upload-zone" id="uploadZone">${icon('upload')}<strong>Drop an image here or click to browse</strong><span>PNG, JPG, WebP · maximum 10 MB · stays on your device</span><input id="imageInput" type="file" accept="image/png,image/jpeg,image/webp" aria-label="Choose an image" /></div><div class="upload-preview" id="uploadPreview"><img id="uploadPreviewImg" alt="Uploaded image preview"/><p id="uploadPreviewLabel"></p></div><div class="file-meta" id="fileMeta"></div>`:'';$('inputHint').textContent=t.image?'Choose a photo':'Fill in the details';$('inputFootnote').textContent=engineDescription(t);$('generateBtn').innerHTML=`${t.image?'Convert image':t.id==='json'?'Fix with AI':'Generate with AI'} ${icon('sparkles')}`;$('generateBtn').disabled=false;clearOutput();$('toolLayer').hidden=false;document.body.classList.add('modal-open');$('engineBadge').classList.toggle('ai-on',providerReady(t));$('engineBadge').innerHTML=`<i></i> ${engineName(t)}`;if(t.image){$('imageInput').addEventListener('change',e=>loadImageFile(e.target.files[0]));const zone=$('uploadZone');['dragenter','dragover'].forEach(n=>zone.addEventListener(n,e=>{e.preventDefault();zone.classList.add('drag-over')}));['dragleave','drop'].forEach(n=>zone.addEventListener(n,e=>{e.preventDefault();zone.classList.remove('drag-over')}));zone.addEventListener('drop',e=>loadImageFile(e.dataTransfer.files[0]));}t.fields.filter(f=>f.type==='range').forEach(f=>{$(`field-${f.name}`).addEventListener('input',e=>{$(`range-${f.name}`).textContent=e.target.value+(['quality','sharpness','brightness','contrast','saturation'].includes(f.name)?'%':'')})});$('workbenchTitle').focus?.();}
 function closeTool(){if(state.running)return;$('toolLayer').hidden=true;document.body.classList.remove('modal-open');if(state.tool?.image){clearImage();clearOutput()}state.tool=null}
@@ -61,7 +80,7 @@ function showProcessingLoader(){
    <div class="ai-wait-visual" aria-hidden="true"><span class="wait-halo wait-halo-one"></span><span class="wait-halo wait-halo-two"></span><span class="wait-core">✦</span><span class="wait-spark wait-spark-one">✳</span><span class="wait-spark wait-spark-two">✧</span><span class="wait-spark wait-spark-three">✦</span></div>
    <span class="wait-overline">AITLAS IS ON IT</span>
    <h4>${label}</h4>
-   <p class="wait-stage" id="aiWaitStage">${state.tool?.id==='converter'?'Preparing your image…':FILE_MODE?'Getting your free browser AI ready…':'Connecting to your AI service…'}</p>
+   <p class="wait-stage" id="aiWaitStage">${state.tool?.id==='converter'?'Preparing your image…':(FILE_MODE||runtimeSettings().mode==='browser')?'Getting your free browser AI ready…':'Choosing the best AI engine…'}</p>
    <div class="wait-track" aria-hidden="true"><span></span></div>
    <div class="wait-skeleton" aria-hidden="true"><i></i><i></i><i></i></div>
    <p class="wait-caption">Your result will appear here as soon as it’s ready.</p>
@@ -79,27 +98,43 @@ function setBusy(busy){
 async function generate(e){
  e.preventDefault();if(!state.tool||state.running)return;
  const tool=state.tool;setBusy(true);
- // Yield a frame so the processing animation is visible before expensive local work.
  await new Promise(resolve=>requestAnimationFrame(()=>setTimeout(resolve,30)));
+ const runBrowser=async(fields)=>{
+   if(!BrowserAI.support())throw Error('Free Browser AI needs WebGPU-enabled Chrome/Edge and compatible graphics hardware. Choose Server AI or Personal API key in AI Settings on this device.');
+   BrowserAI.onProgress(text=>{if(state.tool===tool){const stage=$('aiWaitStage');if(stage)stage.textContent=String(text).slice(0,200);$('serviceStatus').textContent=text;}});
+   const result=await BrowserAI.generate(tool.id,fields);
+   setOutput(result,{code:['sql','regex','code','json'].includes(tool.id),info:'Generated locally using free Browser AI',footnote:'Small local AI models may make mistakes. Review important results and test generated code.'});
+   $('serviceStatus').textContent='Free Browser AI ready · model loaded on this device · image converter works offline';
+ };
+ const runHosted=async(fields,client=null)=>{
+   const stage=$('aiWaitStage');if(stage)stage.textContent=client?'Connecting with your personal AI key…':'Connecting to Vercel server AI…';
+   const body={tool:tool.id,fields};if(client)body.client=client;
+   const response=await fetch('/api/ai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:AbortSignal.timeout(65000)});
+   let result;try{result=await response.json()}catch{throw Error('The AI service returned an unreadable response. Please try again.');}
+   if(!response.ok||!result.text){const err=Error(result.error||'AI generation failed. Please try again.');err.httpStatus=response.status;throw err;}
+   setOutput(result.text,{code:['sql','regex','code','json'].includes(tool.id),info:`Generated using ${result.engine||'the configured AI service'}`,footnote:'AI output can contain inaccuracies. Review important information and test generated code or SQL before using it.'});
+ };
  try{
-   if(tool.image){if(!state.image)throw Error('Please select a PNG, JPG, or WebP image first.');await runImageTool(tool.id,readFields());return}
+   if(tool.image){if(!state.image)throw Error('Please select a PNG, JPG, or WebP image first.');await runImageTool(tool.id,readFields());return;}
    const fields=readFields();if(Object.entries(fields).some(([key,value])=>tool.fields.find(f=>f.name===key)?.required&&!value))throw Error('Please fill in all required fields.');
-   if(FILE_MODE){
-     if(!BrowserAI.support())throw Error('Free browser AI requires WebGPU-enabled Chrome/Edge and compatible graphics hardware. On this device, you can use Image Converter now or run the optional server version with an AI provider.');
-     BrowserAI.onProgress(text=>{if(state.tool===tool){const stage=$('aiWaitStage');if(stage)stage.textContent=String(text).slice(0,200);$('serviceStatus').textContent=text;}});
-     const result=await BrowserAI.generate(tool.id,fields);
-     setOutput(result,{code:['sql','regex','code','json'].includes(tool.id),info:'Generated locally using a free browser AI model',footnote:'Small local AI models may make mistakes. Review important results and test generated code.'});
-     $('serviceStatus').textContent='Free browser AI ready · model loaded on this device · image converter works offline';
-     return;
+   const r=runtimeSettings();
+   if(FILE_MODE||r.mode==='browser'){await runBrowser(fields);return;}
+   if(r.mode==='personal'){
+     if(!r.key)throw Error('Open AI Settings and paste your personal API key first.');
+     await runHosted(fields,{provider:r.provider,key:r.key,model:r.model||''});return;
    }
-   if(!providerReady(tool))throw Error('Open AI Settings (gear icon) and connect a free Gemini, Groq or OpenRouter key, or enable local Ollama.');
-   const response=await fetch('/api/ai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tool:tool.id,fields}),signal:AbortSignal.timeout(90000)});
-   let result;try{result=await response.json()}catch{throw Error('The AI service returned an unreadable response. Please try again.')}
-   if(!response.ok||!result.text)throw Error(result.error||'AI generation failed. Please try again.');
-   setOutput(result.text,{code:['sql','regex','code','json'].includes(tool.id),info:`Generated using ${result.engine||'the configured AI service'}`,footnote:'AI output can contain inaccuracies. Review important information and test any generated code or SQL before using it.'});
- }catch(err){outputError(err.name==='TimeoutError'?'The AI request timed out. Try again.':err.message||'Something went wrong. Please try again.');toast('Could not generate a result')}
+   if(r.mode==='server'){
+     if(!state.providers.ai)throw Error('Server AI is not configured. Add GEMINI_API_KEY, GROQ_API_KEY, OPENROUTER_API_KEY or OPENAI_API_KEY in Vercel Environment Variables.');
+     await runHosted(fields);return;
+   }
+   if(state.providers.ai){
+     try{await runHosted(fields);return;}catch(hostedError){if(!BrowserAI.support())throw hostedError;const stage=$('aiWaitStage');if(stage)stage.textContent='Server AI unavailable · switching to free Browser AI…';}
+   }
+   await runBrowser(fields);
+ }catch(err){outputError(err.name==='TimeoutError'?'The AI request timed out. Try again.':err.message||'Something went wrong. Please try again.');toast('Could not generate a result');}
  finally{setBusy(false)}
 }
+
 function downloadBlob(blob,name){const a=document.createElement('a');const url=URL.createObjectURL(blob);a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),3000)}
 async function copyResult(){if(!state.output)return;try{await navigator.clipboard.writeText(state.output);toast('Copied to clipboard!')}catch{const ta=document.createElement('textarea');ta.value=state.output;document.body.append(ta);ta.select();document.execCommand('copy');ta.remove();toast('Copied to clipboard!')}}
 function downloadResult(){if(state.downloadBlob){downloadBlob(state.downloadBlob,state.downloadName);return}if(!state.output)return;const ext=['sql','code','regex','json'].includes(state.tool?.id)?state.tool.id==='json'?'json':state.tool.id==='sql'?'sql':'txt':'txt';downloadBlob(new Blob([state.output],{type:'text/plain;charset=utf-8'}),`${state.tool?.id||'result'}-aitlas.${ext}`);toast('Download started')}
@@ -115,7 +150,13 @@ function renderThemeButton(){
  const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.content=light?'#f7f5ff':'#0c1024';
 }
 function init(){applyIcons();$('year').textContent=new Date().getFullYear();if(readStore('aitlas-light',false))document.body.classList.add('light');renderThemeButton();showCategory('all');renderRecent();document.querySelectorAll('[data-category]').forEach(btn=>btn.addEventListener('click',()=>showCategory(btn.dataset.category)));document.querySelectorAll('[data-filter]').forEach(btn=>btn.addEventListener('click',()=>showCategory(btn.dataset.filter)));$('toolGrid').addEventListener('click',e=>{const fav=e.target.closest('[data-favorite]');if(fav){toggleFavorite(fav.dataset.favorite);return}const card=e.target.closest('[data-tool]');if(card)openTool(card.dataset.tool)});$('toolGrid').addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches('[data-tool]')){e.preventDefault();openTool(e.target.dataset.tool)}});$('recentNav').addEventListener('click',e=>{const b=e.target.closest('[data-recent]');if(b)openTool(b.dataset.recent)});$('menuBtn').addEventListener('click',openSidebar);$('sidebarScrim').addEventListener('click',closeSidebar);$('brandLink').addEventListener('click',()=>{showCategory('all');window.scrollTo({top:0,behavior:'smooth'})});$('themeBtn').addEventListener('click',()=>{document.body.classList.toggle('light');const light=document.body.classList.contains('light');renderThemeButton();saveStore('aitlas-light',light)});$('exploreBtn').addEventListener('click',()=>{$('toolsSection').scrollIntoView({behavior:'smooth'})});$('backToTop').addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));$('resetFilter').addEventListener('click',()=>showCategory('all'));$('searchTrigger').addEventListener('click',openSearch);$('searchBackdrop').addEventListener('click',closeSearch);$('globalSearch').addEventListener('input',e=>{state.searchIndex=0;renderSearch(e.target.value)});$('searchResults').addEventListener('click',e=>{const btn=e.target.closest('[data-search-tool]');if(btn){closeSearch();openTool(btn.dataset.searchTool)}});$('globalSearch').addEventListener('keydown',e=>{const items=$('searchResults').querySelectorAll('[data-search-tool]');if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();state.searchIndex=(state.searchIndex+items.length+(e.key==='ArrowDown'?1:-1))%Math.max(items.length,1);renderSearch(e.target.value)}else if(e.key==='Enter'&&items.length){e.preventDefault();const id=items[state.searchIndex].dataset.searchTool;closeSearch();openTool(id)}});$('modalBackdrop').addEventListener('click',closeTool);$('closeWorkbench').addEventListener('click',closeTool);$('closeWorkbenchIcon').addEventListener('click',closeTool);$('toolForm').addEventListener('submit',generate);$('clearBtn').addEventListener('click',()=>{if(state.running)return;$('toolForm').reset();state.tool?.fields.filter(f=>f.type==='range').forEach(f=>{$(`range-${f.name}`).textContent=f.value+(['quality','sharpness','brightness','contrast','saturation'].includes(f.name)?'%':'')});if(state.tool?.image)clearImage();clearOutput();toast('Tool reset')});$('copyBtn').addEventListener('click',copyResult);$('downloadBtn').addEventListener('click',downloadResult);document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();if($('searchLayer').hidden)openSearch();else closeSearch()}if(e.key==='Escape'){if(!$('searchLayer').hidden)closeSearch();else if(!$('toolLayer').hidden)closeTool();else closeSidebar()}});refreshProviderStatus();}
-async function refreshProviderStatus(){if(FILE_MODE){state.ai=BrowserAI.support();state.providers={ai:state.ai};const status=$('serviceStatus');if(status)status.textContent=state.ai?'Free browser AI is available · AI model downloads on first use · image conversion works offline':'Image converter ready · Browser AI needs a WebGPU-compatible graphics card/browser';return {ai:state.ai,browser:true};}try{const r=await fetch('/api/health',{signal:AbortSignal.timeout(3000)});if(!r.ok)throw Error('Unavailable');const j=await r.json();state.ai=Boolean(j.ai);state.providers={ai:Boolean(j.ai)};const status=$('serviceStatus');if(status)status.textContent=`${j.ai?`Text AI ready (${j.provider})`:'Text AI not connected'} · image converter works offline`;return j;}catch{const status=$('serviceStatus');if(status)status.textContent='Start the Node.js server to connect AI tools. Opening index.html alone cannot run AI tools.';return null}}
+async function refreshProviderStatus(){
+ const browser=BrowserAI.support();
+ if(FILE_MODE){state.ai=browser;state.providers={ai:false};const status=$('serviceStatus');if(status)status.textContent=browser?'Free Browser AI available · first run downloads the model · image converter works offline':'Image converter ready · Browser AI needs WebGPU-enabled Chrome/Edge';return {ai:false,browser};}
+ try{
+   const r=await fetch('/api/health',{signal:AbortSignal.timeout(5000)});if(!r.ok)throw Error('Unavailable');const j=await r.json();state.providers={ai:Boolean(j.ai)};state.ai=Boolean(j.ai)||browser;const status=$('serviceStatus');if(status)status.textContent=j.ai?`Server AI ready (${j.provider}) · free Browser AI fallback ${browser?'available':'unavailable'}`:browser?'Server AI not configured · free Browser AI will activate automatically':'AI setup needed · configure Vercel provider or use a WebGPU-compatible browser';if(globalThis.AitlasSettings?.refresh)globalThis.AitlasSettings.refresh().catch(()=>{});return {...j,browser};
+ }catch{state.providers={ai:false};state.ai=browser;const status=$('serviceStatus');if(status)status.textContent=browser?'AI function unavailable · free Browser AI will activate automatically':'Could not reach AI function and Browser AI is unavailable on this device';return {ai:false,browser};}
+}
 document.addEventListener('DOMContentLoaded',init);
 
 async function loadImageFile(file){if(!file)return;if(!/^image\/(png|jpeg|webp)$/.test(file.type)){toast('Please choose a PNG, JPG or WebP image');return}if(file.size>10*1024*1024){toast('Please choose an image under 10 MB');return}if(state.objectUrl)URL.revokeObjectURL(state.objectUrl);state.objectUrl=URL.createObjectURL(file);const img=new Image();img.src=state.objectUrl;try{await img.decode()}catch{toast('This image could not be decoded');return}if(img.naturalWidth*img.naturalHeight>50000000){toast('Image is too large; use one under 50 megapixels');return}state.image={img,file};$('uploadPreviewImg').src=state.objectUrl;$('uploadPreview').classList.add('show');$('uploadPreviewLabel').textContent=`${file.name} · ${img.naturalWidth} × ${img.naturalHeight}`;$('fileMeta').textContent='Ready for conversion on your device.';clearOutput();}

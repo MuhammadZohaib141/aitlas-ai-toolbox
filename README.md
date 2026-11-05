@@ -1,25 +1,56 @@
-# Aitlas AI Toolbox v7 — 16 tools, smoother animations
+# Aitlas AI Toolbox v8 — Vercel Ready
 
-## Open without installing anything
+A polished 16-tool AI website with smooth loaders, theme switching, stable hover/jelly animations, free Browser AI fallback, local image conversion, and optional hosted AI.
 
-Extract this folder and double-click `index.html`. The **16-tool** interface, search, favorites, light/dark theme, and Image Converter work directly in Chrome or Edge. You do **not** need `npm start` for the standalone website.
+## Deploy on Vercel
 
-**Tools:** 7 writing tools (Email Generator, Paragraph Rewriter, Grammar Fixer, Summarizer, AI Translator, Tone Changer, Title Generator); 1 image tool (Image Converter); 4 developer tools (Code Explainer, JSON Fixer, Regex Generator, SQL Generator); 4 student tools (Notes Summarizer, Flashcard Generator, Quiz Generator, Study-plan Generator).
+1. Upload this folder/ZIP to a Git repository or import the folder into Vercel.
+2. Vercel will serve `index.html` as the site and the files in `api/` as Serverless Functions.
+3. No build command is required.
+4. Node is pinned to `24.x` in `package.json` to avoid the `>=20` auto-upgrade warning.
 
-Image Enhancer, Background Remover and Resume Writer were removed from the website and backend. Favorites and recent-tool entries for these retired tools are no longer shown.
+### Optional server AI
 
-## Free text AI in your browser
+For the best experience for all visitors, open **Vercel → Project → Settings → Environment Variables** and add at least one:
 
-The 15 writing, developer, and student utilities can use a small local Qwen model on **compatible WebGPU computers**. The first run downloads model files and requires an internet connection; model inference happens on your computer, without an API key. Browser permissions, device memory, local-file restrictions, or network blocks may prevent model loading. For a more capable model, choose Qwen 1.5B in AI Settings if your hardware supports it. Results from small models may contain errors.
+- `GEMINI_API_KEY`
+- `GROQ_API_KEY`
+- `OPENROUTER_API_KEY`
+- `OPENAI_API_KEY`
 
-## Optional server AI
+Optional:
 
-If you prefer a hosted model, with Node.js 20+ run `npm start` inside this folder and visit `http://localhost:3000`. The large AI Settings button includes secure owner-only settings for Gemini, Groq, OpenRouter, OpenAI, or local Ollama. Hosted providers may require an API key and have their own usage limits or costs. Never place cloud API keys in the public HTML or frontend JavaScript.
+- `TEXT_AI_PROVIDER=auto` (or `gemini`, `groq`, `openrouter`, `openai`)
+- `FREE_AI_MODEL=`
+- `OPENAI_MODEL=gpt-4.1-mini`
 
-## Animation fix in v7
+Redeploy after changing environment variables.
 
-The old tool-card entrance animation and the jelly hover animation controlled the same card, which could cause a brief disappear/reappear effect. The card now stays fully opaque and in its original hit area; a gentle CSS spring moves it only a few pixels while its **icon** performs a tiny jelly bounce. Reduced-motion browser preferences are respected. The loading animation, larger AI Settings button, redesigned colors, and theme switch are all retained.
+## Automatic free AI
 
-The Image Converter works without AI or internet. It converts PNG/JPG/WebP, downscaling any side over 2,600 pixels. JPEG transparencies are flattened against white. This is genuine browser image conversion, not AI processing.
+If no hosted server key is configured, **Automatic** mode falls back to free Browser AI on compatible Chrome/Edge devices with WebGPU. The first request downloads the selected model. Image Converter works locally with no AI key.
 
-To run checks with Node.js 20+: `npm test`.
+## AI Settings inside the website
+
+The large **AI Settings** button lets a user choose:
+
+- Automatic — server AI first, then Browser AI
+- Browser AI only
+- Vercel server AI only
+- Personal API key
+
+A personal API key is not written into the website source. If “Remember this key” is enabled, it is stored in that browser's local storage; otherwise it is kept only for the browser session. For a public production site, use Vercel Environment Variables instead.
+
+## Direct file use
+
+You can still double-click `index.html`. In `file:///` mode the text tools use Browser AI where supported, and Image Converter remains local.
+
+## Tools
+
+AI Writing: Email Generator, Paragraph Rewriter, Grammar Fixer, Summarizer, AI Translator, Tone Changer, Title Generator.
+
+AI Images: Image Converter.
+
+AI Developer: Code Explainer, JSON Fixer, Regex Generator, SQL Generator.
+
+AI Student: Notes Summarizer, Flashcard Generator, Quiz Generator, Study-plan Generator.

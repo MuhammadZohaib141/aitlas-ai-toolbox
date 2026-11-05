@@ -1,1 +1,13 @@
-{"name":"aitlas-ai-toolbox","version":"7.0.0","private":true,"type":"module","description":"16 tools with Gemini, Groq, OpenRouter, Ollama and OpenAI providers","scripts":{"start":"node server.mjs","dev":"node --watch server.mjs","test":"node --test tests.mjs test-free-ai.mjs test-browser-mode.mjs test-design.mjs"},"engines":{"node":">=20"}}
+{
+  "name": "aitlas-ai-toolbox",
+  "version": "8.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Aitlas AI Toolbox - Vercel-ready 16 tool website with automatic browser AI fallback",
+  "scripts": {
+    "test": "node --test vercel-tests.mjs test-design.mjs"
+  },
+  "engines": {
+    "node": "24.x"
+  }
+}
