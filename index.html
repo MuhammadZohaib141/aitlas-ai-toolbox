@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0c1024" />
+  <meta name="description" content="Aitlas brings writing, images, coding and study utilities together. 16 tools with free browser AI, no account required." />
+  <title>Aitlas — Creative AI Studio</title>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./studio.css" />
+</head>
+<body>
+  <div class="ambient ambient-a" aria-hidden="true"></div><div class="ambient ambient-b" aria-hidden="true"></div>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+      <a class="brand" href="#home" id="brandLink" aria-label="Aitlas home">
+        <span class="brand-mark"><svg viewBox="0 0 32 32" width="29" height="29" fill="none" aria-hidden="true"><path d="M16 3 29 25H3L16 3Z" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><path d="m16 12 6 10H10l6-10Z" fill="currentColor"/></svg></span>
+        <span class="brand-word">aitlas<span class="brand-period">.</span><small>AI TOOLBOX</small></span>
+      </a>
+      <div class="side-scroll">
+        <p class="side-caption">WORKSPACE</p>
+        <nav class="side-nav" id="sideNav">
+          <button type="button" class="side-link active" data-category="all"><span data-icon="grid"></span><span>Discover</span><span class="side-key">⌘1</span></button>
+          <button type="button" class="side-link" data-category="writing"><span data-icon="pen"></span><span>AI Writing</span><span class="side-count">7</span></button>
+          <button type="button" class="side-link" data-category="images"><span data-icon="image"></span><span>AI Images</span><span class="side-count">1</span></button>
+          <button type="button" class="side-link" data-category="developer"><span data-icon="code"></span><span>AI Developer</span><span class="side-count">4</span></button>
+          <button type="button" class="side-link" data-category="student"><span data-icon="book"></span><span>AI Student</span><span class="side-count">4</span></button>
+          <button type="button" class="side-link" data-category="favorites"><span data-icon="heart"></span><span>Favorites</span><span class="side-count" id="favCount">0</span></button>
+        </nav>
+        <p class="side-caption side-caption-spaced">YOUR SPACE</p>
+        <div class="recent-area" id="recentNav"><p class="recent-empty">Your recently opened tools will appear here.</p></div>
+      </div>
+      <div class="sidebar-bottom">
+        <div class="side-promo"><span class="promo-asterisk">✳</span><strong>Ideas, meet tools.</strong><p>Everything you need to create a little more magic.</p><span class="promo-foot"><span class="online-dot"></span> 16 tools · Free browser AI · no API key</span></div>
+        <p class="sidebar-footer">MADE FOR CURIOUS MINDS <span>✦</span></p>
+      </div>
+    </aside>
+    <div class="sidebar-scrim" id="sidebarScrim"></div>
+    <main class="main" id="main">
+      <header class="topbar">
+        <div class="top-left"><button type="button" class="icon-btn menu-btn" id="menuBtn" aria-label="Open navigation"><span data-icon="menu"></span></button><div class="breadcrumb">Workspace <span>/</span> <strong id="breadcrumbLabel">Discover</strong></div></div>
+        <div class="top-actions"><button type="button" class="search-trigger" id="searchTrigger"><span data-icon="search"></span><span>Search any tool...</span><kbd>Ctrl K</kbd></button><span class="status-pill"><i></i> No sign-up to browse</span><button type="button" class="settings-toggle" id="settingsBtn" aria-label="Open AI Settings" title="Set up free browser AI and optional cloud models"><span class="settings-btn-icon" data-icon="settings"></span><span class="settings-btn-copy"><strong>AI Settings</strong><small>Choose your model</small></span><span class="settings-btn-arrow" aria-hidden="true">↗</span></button><button type="button" class="theme-toggle" id="themeBtn" aria-label="Switch color theme" title="Switch color theme"><span class="theme-icon" data-icon="sun"></span><span class="theme-label">Light mode</span></button></div>
+      </header>
+      <div class="page-content">
+        <section class="hero" id="hero">
+          <div class="hero-copy"><div class="eyebrow"><span class="eyebrow-star">✦</span> YOUR CREATIVE SIDEKICK <span class="eyebrow-line"></span> ALL IN ONE PLACE</div><h1>One toolbox.<br /><span>Infinite possibilities<span class="heading-dot">.</span></span></h1><p>Use free on-device AI for writing, coding and studying on supported computers. Convert images offline. The Image Converter works directly in your browser.</p><div class="hero-actions"><button type="button" class="primary-btn" id="exploreBtn">Explore all tools <span data-icon="arrow"></span></button><span class="hero-caption"><span class="tiny-sparkle">✳</span> No visitor account · Free browser AI on compatible computers; optional server AI.</span></div></div>
+          <div class="hero-art" aria-hidden="true"><div class="art-orbit orbit-one"></div><div class="art-orbit orbit-two"></div><div class="art-blob"></div><div class="art-center"><span class="art-glyph">✳</span></div><div class="floating-token token-top"><span>✍</span> words that work</div><div class="floating-token token-left"><span>⌘</span> create anything</div><div class="floating-token token-bottom"><span>✦</span> endless ideas</div><span class="art-spark art-spark-a">✧</span><span class="art-spark art-spark-b">✧</span></div>
+          <div class="hero-grain" aria-hidden="true"></div>
+        </section>
+        <section class="stats-bar" aria-label="Toolbox highlights"><div><span class="stats-icon icon-purple" data-icon="sparkles"></span><strong>16 creative tools</strong><small>One delightful workspace</small></div><span class="stat-separator"></span><div><span class="stats-icon icon-green" data-icon="shield"></span><strong>No visitor account needed</strong><small>Browser AI has no API charges</small></div><span class="stat-separator"></span><div><span class="stats-icon icon-blue" data-icon="zap"></span><strong>Real AI processing</strong><small>Browser AI + offline image conversion</small></div></section>
+        <p class="service-status" role="status" id="serviceStatus">Checking available AI services…</p><section class="tools-section" id="toolsSection"><div class="section-head"><div><div class="section-kicker"><span>✳</span> THE TOOL COLLECTION</div><h2 id="sectionTitle">Explore your toolbox<span class="title-period">.</span></h2><p id="sectionSubtitle">Pick a tool. Turn that idea into something great.</p></div><span class="result-count" id="resultCount">16 TOOLS</span></div>
+          <div class="filter-row" id="filterRow"><button type="button" class="filter-chip active" data-filter="all">✦ All tools <span>16</span></button><button type="button" class="filter-chip" data-filter="writing">✍ Writing <span>7</span></button><button type="button" class="filter-chip" data-filter="images">▧ Images <span>1</span></button><button type="button" class="filter-chip" data-filter="developer">⌘ Developer <span>4</span></button><button type="button" class="filter-chip" data-filter="student">◈ Student <span>4</span></button></div>
+          <div class="tool-grid" id="toolGrid"></div><div class="empty-state" id="emptyState" hidden><span>✦</span><h3>Nothing here just yet</h3><p>Try a different search or add a tool to your favorites.</p><button type="button" class="secondary-btn" id="resetFilter">See all tools</button></div>
+        </section>
+        <section class="bottom-cta"><span class="bottom-asterisk">✳</span><div><h3>Big ideas start with little tools.</h3><p>16 tools to make your next bright idea happen. All yours to explore.</p></div><button type="button" class="secondary-btn" id="backToTop">Back to top <span data-icon="up"></span></button></section>
+        <footer class="footer"><span>© <span id="year"></span> aitlas. Crafted to help ideas grow.</span><span>Built with curiosity <b>✦</b> and a little bit of magic.</span></footer>
+      </div>
+    </main>
+  </div>
+  <div class="modal-layer" id="toolLayer" hidden><div class="modal-backdrop" id="modalBackdrop"></div><section class="workbench" role="dialog" aria-modal="true" aria-labelledby="workbenchTitle"><div class="workbench-top"><div class="wb-breadcrumb"><button type="button" class="back-btn" id="closeWorkbench"><span data-icon="arrow-left"></span> Back to tools</button><span class="wb-divider">/</span><span id="wbCategory">AI Writing</span></div><div class="wb-actions"><span class="local-badge" id="engineBadge"><i></i> LOCAL MODE</span><button type="button" class="workbench-settings" id="workbenchSettingsBtn" aria-label="Open AI Settings" title="Choose your AI model"><span data-icon="settings"></span><span>AI Settings</span></button><button type="button" class="icon-btn" id="closeWorkbenchIcon" aria-label="Close tool"><span data-icon="x"></span></button></div></div><div class="workbench-scroll"><div class="wb-heading"><div class="wb-icon" id="wbIcon"></div><div><div class="wb-kicker">YOUR CREATIVE WORKSPACE</div><h2 id="workbenchTitle">Tool name</h2><p id="wbDescription">Tool description.</p></div></div><div class="wb-panels"><form class="wb-panel input-panel" id="toolForm"><div class="panel-heading"><div><span class="panel-numeral">01</span><h3>Make it yours</h3></div><span class="panel-help" id="inputHint">Fill in the details</span></div><div id="formFields" class="form-fields"></div><div id="imageUploadArea" hidden></div><div class="form-actions"><button type="submit" class="primary-btn generate-btn" id="generateBtn">Generate result <span data-icon="sparkles"></span></button><button type="button" class="text-btn" id="clearBtn"><span data-icon="rotate"></span> Reset</button></div><p class="input-footnote" id="inputFootnote"></p></form><section class="wb-panel output-panel"><div class="panel-heading"><div><span class="panel-numeral">02</span><h3>Your result</h3></div><div class="result-actions"><button type="button" class="icon-btn copy-btn" id="copyBtn" aria-label="Copy result" title="Copy result" disabled><span data-icon="copy"></span></button><button type="button" class="icon-btn" id="downloadBtn" aria-label="Download result" title="Download result" disabled><span data-icon="download"></span></button></div></div><div class="output-content" id="outputContent"><div class="result-placeholder"><div class="placeholder-shape"><span>✳</span></div><h4>A little magic is coming.</h4><p>Fill in the details and click generate. Your result will appear right here.</p></div></div><p class="output-footnote" id="outputFootnote">Made to make your work a little easier.</p></section></div></div></section></div>
+  <div class="search-layer" id="searchLayer" hidden><div class="search-backdrop" id="searchBackdrop"></div><div class="search-dialog" role="dialog" aria-modal="true" aria-label="Find a tool"><div class="search-box"><span data-icon="search"></span><input id="globalSearch" type="search" placeholder="Search tools, ideas, categories..." autocomplete="off" /><kbd>ESC</kbd></div><div class="search-list" id="searchResults"></div><div class="search-footer"><span>↵ to open</span><span>16 tools at your fingertips</span></div></div></div>
+  <div class="settings-layer" id="settingsLayer" hidden>
+    <div class="settings-backdrop" id="settingsBackdrop"></div>
+    <section class="settings-drawer" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+      <header class="settings-header"><div class="settings-heading-mark">✳</div><div><span class="settings-kicker">YOUR OWNER WORKSPACE</span><h2 id="settingsTitle">AI Settings<span class="heading-dot">.</span></h2><p>Connect real AI models without editing any code.</p></div><button type="button" class="icon-btn" id="closeSettings" aria-label="Close settings"><span data-icon="x"></span></button></header>
+      <div class="settings-content">
+        <div class="settings-alert" id="settingsAlert" role="status" aria-live="polite">Checking AI options…</div>
+        <div id="browserAiSettings" class="browser-ai-panel" hidden>
+          <div class="settings-step">FREE · NO API KEY OR SERVER</div>
+          <h3>Browser AI</h3>
+          <p>A free, small language model runs on your device when you generate text. The first run downloads model files (hundreds of MB); internet, supported WebGPU graphics, and sufficient memory are required. Your text stays on your computer during inference.</p>
+          <div class="settings-alert" id="browserAiStatus" role="status">Checking browser support…</div>
+          <label class="settings-label">Model<select id="browserModel"><option value="Qwen2.5-0.5B-Instruct-q4f16_1-MLC">Small · Qwen 0.5B (~1 GB GPU memory)</option><option value="Qwen2.5-1.5B-Instruct-q4f16_1-MLC">Higher quality · Qwen 1.5B (~1.7 GB GPU memory)</option></select></label>
+          <button id="browserAiPrepare" type="button" class="primary-btn settings-submit">Download &amp; load free model <span data-icon="sparkles"></span></button>
+          <p class="settings-footnote">The Image Converter works locally, without an API key or an internet connection.</p>
+        </div>
+        <form id="settingsSetup" class="settings-form" hidden><div class="settings-step">01 / SECURE OWNER ACCESS</div><h3>Set up your owner account</h3><p>Find the one-time setup code printed in the terminal running <code>npm start</code>. On hosting, find it in the server logs.</p><label class="settings-label">One-time setup code<input type="text" name="code" placeholder="Code from server terminal" required autocomplete="off" spellcheck="false" /></label><label class="settings-label">Create owner password<input type="password" name="password" minlength="12" placeholder="At least 12 characters" required autocomplete="new-password" /></label><button type="submit" class="primary-btn settings-submit">Create owner account <span data-icon="arrow"></span></button></form>
+        <form id="settingsLogin" class="settings-form" hidden><div class="settings-step">OWNER ACCESS</div><h3>Welcome back</h3><p>Only the site owner can view or change provider settings. Visitors never see your saved API keys.</p><label class="settings-label">Owner password<input type="password" name="password" placeholder="Enter your owner password" required autocomplete="current-password" /></label><button type="submit" class="primary-btn settings-submit">Unlock AI Settings <span data-icon="arrow"></span></button></form>
+        <form id="settingsConfig" class="settings-form" hidden><div class="settings-config-top"><div><div class="settings-step">02 / CONNECT YOUR AI</div><h3>Connect your AI services</h3><p>Choose a free AI provider below. Keys stay on your server; leave an existing key blank to keep it unchanged.</p></div><button type="button" class="settings-logout" id="settingsLogout">Sign out</button></div>
+          <div class="provider-tile free-ai-tile">
+            <div class="settings-step">FREE AI · CHOOSE YOUR TEXT ENGINE</div>
+            <p class="free-ai-intro">Try free-tier models for all 15 writing, coding and study utilities. Free providers have limits; an API key is still needed for hosted models.</p>
+            <label class="settings-label">Active text AI provider<select name="provider" id="aiProvider">
+              <option value="auto">Automatic · Prefer connected free providers</option>
+              <option value="gemini">Google Gemini · free API tier</option>
+              <option value="groq">Groq · free API tier</option>
+              <option value="openrouter">OpenRouter · free models</option>
+              <option value="ollama">Ollama · run locally, no cloud key</option>
+              <option value="openai">OpenAI · optional paid API</option>
+            </select></label>
+            <div class="free-providers">
+              <div class="free-provider"><div class="provider-top"><div class="provider-logo">G</div><div><strong>Google Gemini</strong><small>Free tier · limits vary by project</small></div><span class="provider-status" id="geminiStatus">Not connected</span></div><label class="settings-label">Gemini API key<input type="password" name="gemini" placeholder="Paste Google AI Studio API key" autocomplete="new-password" spellcheck="false" /></label><a class="settings-external" target="_blank" rel="noopener noreferrer" href="https://aistudio.google.com/apikey">Get Gemini key ↗</a><label class="remove-provider"><input type="checkbox" name="clear_gemini" /> Remove saved key</label></div>
+              <div class="free-provider"><div class="provider-top"><div class="provider-logo">↯</div><div><strong>Groq</strong><small>Free tier · fast text inference</small></div><span class="provider-status" id="groqStatus">Not connected</span></div><label class="settings-label">Groq API key<input type="password" name="groq" placeholder="Paste GroqCloud API key" autocomplete="new-password" spellcheck="false" /></label><a class="settings-external" target="_blank" rel="noopener noreferrer" href="https://console.groq.com/keys">Get Groq key ↗</a><label class="remove-provider"><input type="checkbox" name="clear_groq" /> Remove saved key</label></div>
+              <div class="free-provider"><div class="provider-top"><div class="provider-logo">∞</div><div><strong>OpenRouter</strong><small>Free models router · daily limits</small></div><span class="provider-status" id="openrouterStatus">Not connected</span></div><label class="settings-label">OpenRouter API key<input type="password" name="openrouter" placeholder="Paste OpenRouter API key" autocomplete="new-password" spellcheck="false" /></label><a class="settings-external" target="_blank" rel="noopener noreferrer" href="https://openrouter.ai/settings/keys">Get OpenRouter key ↗</a><label class="remove-provider"><input type="checkbox" name="clear_openrouter" /> Remove saved key</label></div>
+              <div class="free-provider"><div class="provider-top"><div class="provider-logo">⌂</div><div><strong>Ollama</strong><small>Locally installed AI model · no API fees</small></div><span class="provider-status" id="ollamaStatus">Not connected</span></div><label class="remove-provider"><input type="checkbox" name="ollamaEnabled" /> Enable local Ollama (server must be running on the same computer as Ollama)</label><label class="settings-label">Installed Ollama model<input name="ollamaModel" id="ollamaModel" type="text" value="llama3.2" autocomplete="off" spellcheck="false" placeholder="llama3.2" /></label><a class="settings-external" target="_blank" rel="noopener noreferrer" href="https://ollama.com/download">Download Ollama ↗</a></div>
+            </div>
+            <label class="settings-label">Optional free-provider model override<input name="freeModel" id="freeModel" type="text" autocomplete="off" spellcheck="false" placeholder="Leave blank for recommended provider default" /></label>
+            <p class="settings-footnote">Leave the model override blank to use a default. For OpenRouter, only openrouter/free and :free models are accepted. Auto mode prefers connected free providers; if only OpenAI is connected, it uses paid OpenAI.</p>
+          </div>
+          <div class="provider-tile"><div class="provider-top"><div class="provider-logo openai-mark">✳</div><div><strong>OpenAI</strong><small>Writing · Developer · Student — 15 text tools</small></div><span class="provider-status" id="openaiStatus">Not connected</span></div><label class="settings-label">OpenAI API key<input type="password" name="openai" id="openaiKeyInput" placeholder="sk-…  Paste your OpenAI API key" autocomplete="new-password" spellcheck="false" /></label><label class="settings-label">Model<select name="model" id="aiModel"><option value="gpt-4.1-mini">GPT-4.1 mini · Fast / economical</option><option value="gpt-4.1">GPT-4.1 · More capable</option><option value="gpt-5-mini">GPT-5 mini</option><option value="gpt-5">GPT-5</option></select></label><a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" class="settings-external">Get an OpenAI API key ↗</a><label class="remove-provider"><input type="checkbox" name="clear_openai" /> Remove saved OpenAI key</label></div>
+          <button type="submit" class="primary-btn settings-submit">Save AI settings <span data-icon="check"></span></button><p class="settings-footnote">Only you can change settings. API requests may cost money, even when visitors use the tools without signing up. Use HTTPS on a public website.</p>
+        </form>
+      </div>
+    </section>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"><span data-icon="check"></span><span id="toastMessage">Copied!</span></div>
+  <script src="./browser-ai.js" defer></script>
+  <script src="./app.js" defer></script>
+  <script src="./settings.js" defer></script>
+</body>
+</html>
